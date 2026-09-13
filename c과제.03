@@ -1,0 +1,20 @@
+#include <stdio.h>
+
+void main() {
+    int i, length = 0;
+    char Str[50];
+
+    printf("\n문자열을 입력하세요 : ");
+    gets(Str);
+
+    printf("\n입력된 문자열은 \n \"");
+    for (i = 0; Str[i]; i++) {
+        printf("%c", Str[i]);
+        length += 1;
+    }
+
+    printf("\" 입니다.");
+    printf("\n입력된 문자열의 길이 = %d \n", length);
+
+    getchar();
+}
