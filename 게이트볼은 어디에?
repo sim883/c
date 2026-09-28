@@ -1,0 +1,32 @@
+#include <stdio.h>
+#include <string.h>
+
+int main(void) {
+    int N;
+    char swings[100];
+
+    scanf("%d", &N);
+    scanf("%s", swings);
+
+    int r = 1, c = 1;
+    int len = strlen(swings);
+
+    for (int i = 0; i < len; i++) {
+        int next_r = r;
+        int next_c = c;
+
+        if (swings[i] == 'U') next_r--;
+        else if (swings[i] == 'D') next_r++;
+        else if (swings[i] == 'L') next_c--;
+        else if (swings[i] == 'R') next_c++;
+
+        if (next_r >= 1 && next_r <= N && next_c >= 1 && next_c <= N) {
+            r = next_r;
+            c = next_c;
+        }
+    }
+
+    printf("(%d, %d)\n", r, c);
+
+    return 0;
+}
