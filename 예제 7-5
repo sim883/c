@@ -1,0 +1,199 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MAX(a,b) ((a>b)?a:b)
+
+// 1. 노드 구조체 정의
+typedef int element;
+
+typedef struct treeNode {
+    element key;            // 데이터 필드
+    struct treeNode* left;  // 왼쪽 서브 트리 링크 필드
+    struct treeNode* right; // 오른쪽 서브 트리 링크 필드
+} treeNode;
+
+// 함수 선언부
+void displayInorder(treeNode* root);
+treeNode* searchBST(treeNode* root, element x);
+treeNode* insertBSTnode(treeNode* p, element x);
+treeNode* LL_rotate(treeNode* parent);
+treeNode* RR_rotate(treeNode* parent);
+treeNode* LR_rotate(treeNode* parent);
+treeNode* RL_rotate(treeNode* parent);
+int getHeight(treeNode* p);
+int getBF(treeNode* p);
+treeNode* rebalance(treeNode** p);
+treeNode* insertAVLnode(treeNode** root, element x);
+
+// 2. 중위 순회 함수
+void displayInorder(treeNode* root) {
+    if (root) {
+        displayInorder(root->left);
+        printf("%d ", root->key); 
+        displayInorder(root->right);
+    }
+}
+
+// 3. BST 탐색 함수
+treeNode* searchBST(treeNode* root, element x) {
+    treeNode* p;
+    int count = 0;
+    p = root;
+    while (p != NULL) {
+        count++;
+        if (x < p->key) p = p->left;
+        else if (x == p->key) {
+            printf("%d번째에 탐색 성공", count);
+            return p;
+        }
+        else p = p->right;
+    }
+    count++;
+    printf("%d번째에 탐색 실패! 찾는 키가 없습니다!", count);
+    return p;
+}
+
+// 4. BST 삽입 함수 (참고용)
+treeNode* insertBSTnode(treeNode* p, element x) {
+    treeNode* newNode;
+    if (p == NULL) {
+        newNode = (treeNode*)malloc(sizeof(treeNode));
+        newNode->key = x;
+        newNode->left = NULL;
+        newNode->right = NULL;
+        return newNode;
+    }
+    if (x < p->key)
+        p->left = insertBSTnode(p->left, x);
+    else if (x > p->key)
+        p->right = insertBSTnode(p->right, x);
+    return p;
+}
+
+// 5. AVL 회전 및 균형 함수들
+treeNode* LL_rotate(treeNode* parent) {
+    treeNode* child = parent->left;
+    parent->left = child->right;
+    child->right = parent;
+    return child;
+}
+
+treeNode* RR_rotate(treeNode* parent) {
+    treeNode* child = parent->right;
+    parent->right = child->left;
+    child->left = parent;
+    return child;
+}
+
+treeNode* LR_rotate(treeNode* parent) {
+    treeNode* child = parent->left;
+    parent->left = RR_rotate(child);
+    return LL_rotate(parent);
+}
+
+treeNode* RL_rotate(treeNode* parent) {
+    treeNode* child = parent->right;
+    parent->right = LL_rotate(child);
+    return RR_rotate(parent);
+}
+
+int getHeight(treeNode* p) {
+    int height = 0;
+    if (p != NULL) height = MAX(getHeight(p->left), getHeight(p->right)) + 1;
+    return height;
+}
+
+int getBF(treeNode* p) {
+    if (p == NULL) return 0;
+    return getHeight(p->left) - getHeight(p->right);
+}
+
+treeNode* rebalance(treeNode** p) {
+    int BF = getBF(*p);
+    if (BF > 1) {
+        if (getBF((*p)->left) > 0)
+            *p = LL_rotate(*p);
+        else
+            *p = LR_rotate(*p);
+    }
+    else if (BF < -1) {
+        if (getBF((*p)->right) < 0)
+            *p = RR_rotate(*p);
+        else
+            *p = RL_rotate(*p);
+    }
+    return *p;
+}
+
+treeNode* insertAVLnode(treeNode** root, element x) {
+    if (*root == NULL) {
+        *root = (treeNode*)malloc(sizeof(treeNode));
+        (*root)->key = x;
+        (*root)->left = NULL;
+        (*root)->right = NULL;
+    }
+    else if (x < (*root)->key) {
+        (*root)->left = insertAVLnode(&((*root)->left), x);
+        *root = rebalance(root);
+    }
+    else if (x > (*root)->key) {
+        (*root)->right = insertAVLnode(&((*root)->right), x);
+        *root = rebalance(root);
+    }
+    else {
+        printf("\n 이미 같은 키가 있습니다! \n");
+        return 0;
+    }
+    return *root;
+}
+
+// 6. 메인 함수 (실행부)
+int main(void) {
+    treeNode* root_AVL = NULL;
+    treeNode* root_BST = NULL;
+
+    // AVL 트리 만들기
+    root_AVL = insertAVLnode(&root_AVL, 50);
+    insertAVLnode(&root_AVL, 60);
+    insertAVLnode(&root_AVL, 70);
+    insertAVLnode(&root_AVL, 90);
+    insertAVLnode(&root_AVL, 80);
+    insertAVLnode(&root_AVL, 75);
+    insertAVLnode(&root_AVL, 73);
+    insertAVLnode(&root_AVL, 72);
+    insertAVLnode(&root_AVL, 78);
+
+    printf("\n****** AVL 트리 출력 **********************\n\n");
+    displayInorder(root_AVL); 
+    
+    printf("\n\n AVL 트리에서 70 탐색 : ");
+    searchBST(root_AVL, 70);
+    printf("\n\n AVL 트리에서 72 탐색 : ");
+    searchBST(root_AVL, 72);
+    printf("\n\n AVL 트리에서 76 탐색 : ");
+    searchBST(root_AVL, 76);
+
+    // BST 만들기
+    root_BST = insertBSTnode(root_BST, 50);
+    insertBSTnode(root_BST, 60);
+    insertBSTnode(root_BST, 70);
+    insertBSTnode(root_BST, 90);
+    insertBSTnode(root_BST, 80);
+    insertBSTnode(root_BST, 75);
+    insertBSTnode(root_BST, 73);
+    insertBSTnode(root_BST, 72);
+    insertBSTnode(root_BST, 78);
+
+    printf("\n\n\n****** BST 출력 **************************\n\n");
+    displayInorder(root_BST); 
+    
+    printf("\n\n BST에서 70 탐색 : ");
+    searchBST(root_BST, 70);
+    printf("\n\n BST에서 72 탐색 : ");
+    searchBST(root_BST, 72);
+    printf("\n\n BST에서 76 탐색 : ");
+    searchBST(root_BST, 76);
+
+    getchar(); 
+    return 0;
+}
